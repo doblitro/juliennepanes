@@ -38,6 +38,7 @@ const ResumeModal: React.FC<ResumeModalProps> = ({ open, onClose }) => {
             </a>
             <button
               onClick={onClose}
+              aria-label="Close resume"
               className="p-2 rounded-md hover:bg-white/10 transition"
             >
               <FaXmark className="h-5 w-5" />
@@ -94,7 +95,7 @@ const Sidebar = ({ resumeOpen, onResumeOpenChange }: SidebarProps) => {
         <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
           Julienne Panes
         </h1>
-        <p className="font-semibold text-xs text-white/20 uppercase tracking-wide">
+        <p className="font-semibold text-xs text-white/70 uppercase tracking-wide">
           Full-Stack Software Developer
         </p>
         {/* Availability badge */}

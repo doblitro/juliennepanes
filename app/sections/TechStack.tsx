@@ -34,6 +34,8 @@ const simpleIconSlugs: Record<string, string> = {
   n8n: 'n8n',
 };
 
+const noIconSlugs = new Set(['seo']);
+
 const normalize = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, '');
 
 const iconFor = (name: string) => {
@@ -44,7 +46,7 @@ const iconFor = (name: string) => {
 };
 
 const TechStackItem = ({ name }: { name: string }) => {
-  const [iconFailed, setIconFailed] = useState(false);
+  const [iconFailed, setIconFailed] = useState(() => noIconSlugs.has(normalize(name)));
 
   return (
     <div className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-white/[0.07] bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/[0.14] transition-all duration-200">

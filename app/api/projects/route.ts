@@ -34,6 +34,12 @@ const slugify = (text: string) =>
 
 const stripBullet = (text = '') => text.replace(/^[-•]\s*/, '').trim();
 
+const MAX_FIELD_LENGTH = 60;
+const isPlausibleField = (text: string) => text.length <= MAX_FIELD_LENGTH;
+const isPlausibleImage = (image: string) =>
+  /^https?:\/\//i.test(image) ||
+  (!/\s/.test(image) && image.length <= MAX_FIELD_LENGTH);
+
 const parseProjectEntries = (html: string): Project[] => {
   const paragraphs = Array.from(html.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/g))
     .map(([, inner]) => stripTags(inner).trim())
@@ -46,7 +52,7 @@ const parseProjectEntries = (html: string): Project[] => {
     if (!line.includes('|')) continue;
 
     const [title, image, url] = line.split('|').map((part) => part.trim());
-    if (!title) continue;
+    if (!title || !isPlausibleField(title)) continue;
 
     const description = stripBullet(paragraphs[i + 1]);
     const technologiesText = stripBullet(paragraphs[i + 2]);
@@ -55,13 +61,21 @@ const parseProjectEntries = (html: string): Project[] => {
       .map((t) => t.trim())
       .filter(Boolean);
 
+    if (
+      !isPlausibleField(description) ||
+      technologies.some((t) => !isPlausibleField(t))
+    ) {
+      i += 2;
+      continue;
+    }
+
     entries.push({
       name: slugify(title),
       title,
       description,
       url: url ?? '',
       technologies,
-      imageUrl: image
+      imageUrl: image && isPlausibleImage(image)
         ? /^https?:\/\//i.test(image)
           ? image
           : `/projects/${image}`

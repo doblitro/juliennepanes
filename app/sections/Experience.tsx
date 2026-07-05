@@ -70,7 +70,7 @@ const ExperienceItem = ({
           <span className="text-sm font-semibold text-foreground group-hover:text-white transition-colors">
             {title}
           </span>
-          <span className="text-xs text-foreground/45 mt-0.5">{period}</span>
+          <span className="text-xs text-foreground/65 mt-0.5">{period}</span>
         </div>
         <FaChevronDown
           className={`mt-1 flex-shrink-0 text-foreground/30 transition-transform duration-300 ${open ? 'rotate-180' : ''}`}

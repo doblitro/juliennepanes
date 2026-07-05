@@ -19,7 +19,8 @@ const spaceMono = Space_Mono({
   display: 'swap',
 });
 
-const title = 'Julienne Panes | Full-Stack Software Developer Portfolio';
+const title =
+  'Julienne Panes | Full-Stack Developer — Projects, Experience & Tech Stack';
 const description =
   'Julienne Panes is a Full-Stack Software Developer specializing in Next.js and Java. Explore her projects, tech stack, and professional experience.';
 
