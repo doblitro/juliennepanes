@@ -3,62 +3,31 @@
 import React, { useState } from 'react';
 import Section from '../ui/Section';
 import { FaChevronDown } from 'react-icons/fa6';
+import useExperience, { ExperienceEntry } from '../hooks/useExperience';
 
-type ExperienceType = {
-  title: string;
-  company: string;
-  period?: string;
-  details: string[];
-};
+type ExperienceType = ExperienceEntry;
 
-const experiences: ExperienceType[] = [
-  {
-    title: 'Full Stack Developer',
-    company: 'CP Health Innovations, Inc.',
-    period: 'Jan 2026 – May 2026',
-    details: [
-      'Developed and maintained features for CareGo (EMR) using Laravel and React, supporting clinic and patient workflows',
-      'Improved application performance and strengthened security for handling sensitive healthcare data',
-      'Collaborated with team to resolve issues and enhance usability based on real-world user needs',
-    ],
-  },
-  {
-    title: 'Software Developer',
-    company: 'Alliance Software Inc.',
-    period: 'Aug 2024 – Oct 2025',
-    details: [
-      'Led the database upgrade research and supported migration.',
-      'Investigated and resolved production issues, providing RCA with simple diagrams for clarity.',
-      'Collaborated with client\u2019s dev team to present updates and align technical solutions with their needs.',
-      'Resolved 20+ CVE vulnerabilities enhancing security compliance.',
-    ],
-  },
-  {
-    title: 'Lead Front-End Developer',
-    company: 'Samahan Systems Development (School Org)',
-    period: 'Aug 2022 – Apr 2024',
-    details: [
-      'Led peers and facilitated internal workshops to improve coding standards and collaboration.',
-    ],
-  },
-  {
-    title: 'Front-End Intern',
-    company: 'Mugna Technologies Inc.',
-    period: 'Apr 2023 – Jun 2023',
-    details: [
-      'Developed the front-end of a company product using React, Next.js, and Chakra UI, ensuring a responsive and user-friendly interface.',
-    ],
-  },
-  {
-    title: 'Freelance & Remote Clients',
-    company: 'Self-Employed',
-    period: 'Nov 2022',
-    details: [
-      'Built and maintained cross-platform mobile applications using React Native.',
-      'Translated UI/UX wireframes into production-ready code aligned with client branding and usability standards.',
-    ],
-  },
-];
+const ExperienceItemSkeleton = ({ isLast }: { isLast: boolean }) => (
+  <div className="relative pl-9">
+    <div className="absolute left-0 top-4 w-[18px] h-[18px] rounded-full border-2 border-[var(--accent-hover)]/50 bg-[var(--sidebar-bg)] z-10 animate-pulse" />
+
+    {!isLast && (
+      <div
+        className="absolute left-[8px] top-[26px] w-px"
+        style={{
+          height: 'calc(100% + 8px)',
+          background:
+            'linear-gradient(to bottom, rgba(255,255,255,0.12), rgba(255,255,255,0.03))',
+        }}
+      />
+    )}
+
+    <div className="pt-2 pb-3 animate-pulse space-y-2">
+      <div className="h-3.5 w-40 rounded bg-white/10" />
+      <div className="h-2.5 w-24 rounded bg-white/[0.06]" />
+    </div>
+  </div>
+);
 
 const ExperienceItem = ({
   title,
@@ -131,16 +100,22 @@ const ExperienceItem = ({
 };
 
 const Experience = () => {
+  const { experiences, loading } = useExperience();
+
   return (
     <Section title="Experience" aria-label="Experience Section">
       <div className="relative flex flex-col">
-        {experiences.map((exp, index) => (
-          <ExperienceItem
-            key={exp.company}
-            {...exp}
-            isLast={index === experiences.length - 1}
-          />
-        ))}
+        {loading
+          ? Array.from({ length: 4 }).map((_, i) => (
+              <ExperienceItemSkeleton key={i} isLast={i === 3} />
+            ))
+          : experiences.map((exp, index) => (
+              <ExperienceItem
+                key={exp.company + exp.title}
+                {...exp}
+                isLast={index === experiences.length - 1}
+              />
+            ))}
       </div>
     </Section>
   );

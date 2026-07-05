@@ -29,7 +29,7 @@ const ResumeModal: React.FC<ResumeModalProps> = ({ open, onClose }) => {
           <h2 className="text-lg font-semibold">Julienne&apos;s Resume</h2>
           <div className="flex gap-2">
             <a
-              href="/Julienne-Andrea-Panes-Resume.pdf"
+              href="/api/resume"
               download
               className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-accent text-white hover:bg-accent-hover text-sm"
             >
@@ -46,7 +46,7 @@ const ResumeModal: React.FC<ResumeModalProps> = ({ open, onClose }) => {
         </div>
 
         <iframe
-          src="/Julienne-Andrea-Panes-Resume.pdf"
+          src="/api/resume"
           title="Resume PDF Viewer"
           className="w-full h-full"
         />
