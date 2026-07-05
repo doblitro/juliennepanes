@@ -28,6 +28,9 @@ export const metadata: Metadata = {
   title: title,
   description: description,
   applicationName: 'Julienne Panes Portfolio',
+  icons: {
+    icon: '/icon.svg',
+  },
   authors: [
     { name: 'Julienne Panes', url: 'https://juliennepanes.pages.dev/' },
   ],
