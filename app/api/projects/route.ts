@@ -1,91 +1,102 @@
-import { Octokit } from '@octokit/core';
 import { NextResponse } from 'next/server';
 
-const username = process.env.GITHUB_USERNAME;
-const octokit = new Octokit({ auth: process.env.GITHUB_OCTO_KIT_API_KEY });
+const docId = process.env.RESUME_DOC_ID;
+const tabId = process.env.PROJECTS_TAB_ID;
 
-const fetchFeaturedProjectsFromREADME = async () => {
-  try {
-    const response = await octokit.request(
-      'GET /repos/{owner}/{repo}/contents/{path}',
-      {
-        owner: username,
-        repo: username,
-        path: 'README.md',
-        headers: { 'X-GitHub-Api-Version': '2022-11-28' },
-      },
-    );
+type Project = {
+  name: string;
+  title: string | null;
+  description: string;
+  url: string;
+  technologies: string[];
+  imageUrl: string | null;
+};
 
-    const file = response.data as { content: string };
-    const content = Buffer.from(file.content, 'base64').toString('utf-8');
+const decodeEntities = (text: string) =>
+  text
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&ndash;/g, '–')
+    .replace(/&mdash;/g, '—')
+    .replace(/&rsquo;/g, '’')
+    .replace(/&lsquo;/g, '‘')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"');
 
-    const featuredMatch = content.match(
-      /#+\s*Featured([\s\S]*?)(?=\n#+\s|\s*$)/i,
-    );
-    if (!featuredMatch) return null;
+const stripTags = (html: string) => decodeEntities(html.replace(/<[^>]+>/g, ''));
 
-    const section = featuredMatch[1];
-    const entryRegex =
-      /\[<img[^>]*?alt="([^"]*)"[^>]*?src="([^"]+)"[^>]*?\/?>\]\(https?:\/\/github\.com\/([^/]+)\/([^\s)\]"']+)\)/g;
+const slugify = (text: string) =>
+  text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 
-    const featured = [];
+const stripBullet = (text = '') => text.replace(/^[-•]\s*/, '').trim();
 
-    let match;
+const parseProjectEntries = (html: string): Project[] => {
+  const paragraphs = Array.from(html.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/g))
+    .map(([, inner]) => stripTags(inner).trim())
+    .filter(Boolean);
 
-    while ((match = entryRegex.exec(section)) !== null) {
-      featured.push({
-        title: match[1],
-        imageUrl: match[2],
-        owner: match[3],
-        name: match[4].replace(/\.git$/, ''),
-      });
-    }
+  const entries: Project[] = [];
 
-    return featured.length > 0 ? featured : null;
-  } catch {
-    return null;
+  for (let i = 0; i < paragraphs.length; i++) {
+    const line = paragraphs[i];
+    if (!line.includes('|')) continue;
+
+    const [title, image, url] = line.split('|').map((part) => part.trim());
+    if (!title) continue;
+
+    const description = stripBullet(paragraphs[i + 1]);
+    const technologiesText = stripBullet(paragraphs[i + 2]);
+    const technologies = technologiesText
+      .split(',')
+      .map((t) => t.trim())
+      .filter(Boolean);
+
+    entries.push({
+      name: slugify(title),
+      title,
+      description,
+      url: url ?? '',
+      technologies,
+      imageUrl: image
+        ? /^https?:\/\//i.test(image)
+          ? image
+          : `/projects/${image}`
+        : null,
+    });
+
+    i += 2;
   }
-};
 
-const fetchRepoDetails = async (owner, name) => {
-  const response = await octokit.request('GET /repos/{owner}/{repo}', {
-    owner,
-    repo: name,
-    headers: { 'X-GitHub-Api-Version': '2022-11-28' },
-  });
-  return {
-    description: response.data.description,
-    homepage: response.data.homepage,
-    topics: response.data.topics ?? [],
-  };
-};
-
-const fetchFeaturedProjects = async (projects) => {
-  return Promise.all(
-    projects.map(async (project) => {
-      const details = await fetchRepoDetails(project.owner, project.name);
-      return { ...project, ...details };
-    }),
-  );
+  return entries;
 };
 
 export async function GET() {
   try {
-    const fromReadMe = await fetchFeaturedProjectsFromREADME();
-    const featured = await fetchFeaturedProjects(fromReadMe ?? []);
+    const response = await fetch(
+      `https://docs.google.com/document/d/${docId}/export?format=html&tab=${tabId}`,
+      { cache: 'no-store' },
+    );
 
-    const mapped = featured.map((project) => ({
-      name: project.name,
-      title: project.title,
-      description: project.description,
-      url: project.homepage,
-      technologies: project.topics,
-      imageUrl: project.imageUrl,
-    }));
+    if (!response.ok) {
+      throw new Error(`Failed to fetch resume doc (${response.status})`);
+    }
 
-    return NextResponse.json(mapped);
+    const html = await response.text();
+    const projects = parseProjectEntries(html);
+
+    return NextResponse.json(projects, {
+      headers: {
+        'Cache-Control': 'no-store',
+      },
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+export const runtime = 'edge';
