@@ -36,7 +36,7 @@ const Socials = () => {
             rel="noopener noreferrer"
             aria-label={social.name}
             className="inline-block transform transition duration-300 ease-in-out
-                            hover:-translate-y-1 hover:shadow-[var(--button-shadow-hover)]
+                            hover:-translate-y-1 hover:shadow-(--button-shadow-hover)
                             hover:cursor-pointer"
           >
             {social.icon ?? social.name}
