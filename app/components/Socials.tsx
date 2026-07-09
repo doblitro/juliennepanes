@@ -11,7 +11,7 @@ const SocialsList: SocialsListType[] = [
   {
     name: 'GitHub',
     icon: <FaGithub />,
-    href: 'https://github.com/iyabc',
+    href: 'https://github.com/doblitro',
   },
   {
     name: 'LinkedIn',
@@ -21,7 +21,7 @@ const SocialsList: SocialsListType[] = [
   {
     name: 'Mail',
     icon: <FaEnvelope />,
-    href: 'mailto:juliennepanes@gmail.com?subject=Software%20Developer',
+    href: 'mailto:juliennepanes@gmail.com?subject=I%20need%20aSoftware%20Developer',
   },
 ];
 
